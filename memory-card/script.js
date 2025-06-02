@@ -79,6 +79,10 @@ const matrixGenerator = (cardValues, size = 4) => {
   cardValues = [...cardValues, ...cardValues];
   //simple shuffle, DO IT YOURSELF
   //Your code here
+  for (let i = cardValues.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cardValues[i], cardValues[j]] = [cardValues[j], cardValues[i]];
+  }
   for (let i = 0; i < size * size; i++) {
     /*
         Create Cards
@@ -101,9 +105,6 @@ const matrixGenerator = (cardValues, size = 4) => {
   cards = document.querySelectorAll(".card-container");
   cards.forEach((card) => {
     card.addEventListener("click", () => {
-      card.classList.add("flipped");
-      movesCounter();
-
       //Your code starts here... This is the hard part of this code
 
       //Logic Needed:
@@ -121,6 +122,51 @@ const matrixGenerator = (cardValues, size = 4) => {
       //If the cards don't match, you should flipped them again. Do you see the class flipped ? Well after this you can't see it (like JOHN CEEENAAAA)
 
       //Note: It would be nice if the flipped process would be 'delayed'
+
+      if (card.classList.contains("matched") || secondCard) {
+        return;
+      }
+
+      if (card === firstCard) {
+        return;
+      }
+
+      card.classList.add("flipped");
+      movesCounter();
+
+      if (!card.classList.contains("matched")) { 
+        if (!firstCard) {
+          firstCard = card;
+          firstCardValue = card.getAttribute("data-card-value");
+        } else {
+          secondCard = card;
+          secondCardValue = card.getAttribute("data-card-value");
+
+          if (firstCardValue === secondCardValue) {
+            firstCard.classList.add("matched");
+            secondCard.classList.add("matched");
+            winCount += 1;
+            if (winCount === (size * size) / 2) {
+              result.innerHTML = `<h2>¡Ganaste!</h2><p>Lo hiciste en ${movesCount} pasos.</p>`;
+              controls.classList.remove("hide");
+              stopButton.classList.add("hide");
+              startButton.classList.remove("hide");
+            }
+            firstCard = null;
+            secondCard = null;
+          } else {
+            let tempFirst = firstCard;
+            let tempSecond = secondCard;
+            firstCard = null;
+
+            setTimeout(() => {
+              tempFirst.classList.remove("flipped");
+              tempSecond.classList.remove("flipped");
+              secondCard = null; 
+            }, 1000);
+          }
+        }
+      }
     });
   });
 };
@@ -137,7 +183,11 @@ startButton.addEventListener("click", () => {
   //Function to to start the timer. Again, check setInterval
   //Hint: You already have a function that checks the time each second, use it wisely
   //YOUR CODE HERE
+  interval = setInterval(timeGenerator, 1000);
+
+  //Function to count moves
   moves.innerHTML = `<span>Pasos:</span> ${movesCount}`;
+  timeValue.innerHTML = `<span>Tiempo:</span> 00:00`;
   initializer();
 });
 
@@ -150,6 +200,12 @@ stopButton.addEventListener(
     startButton.classList.remove("hide");
     // timer created with setInterVal needs to be cleared
     //YOUR CODE HERE
+    clearInterval(interval);
+    //Reset values
+    movesCount = 0;
+    seconds = 0;
+    minutes = 0;
+    timeValue.innerHTML = `<span>Tiempo:</span> 00:00`;
   })
 );
 
