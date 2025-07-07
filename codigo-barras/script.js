@@ -223,7 +223,7 @@ function generateInvoiceFormat(invoice) {
   result += "-".repeat(51) + "\n";
   result += `Total: ${total}`;
 
-  return result;
+  return result.replace(/ /g, '&nbsp;');
 }
 
 /**
